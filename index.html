@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meu Painel Pessoal - Neto</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f4f4; }
+    .tabs { display: flex; background: #333; padding: 10px; overflow-x: auto; }
+    .tab { padding: 12px 20px; color: white; background: #555; margin-right: 5px; border-radius: 5px 5px 0 0; cursor: pointer; white-space: nowrap; }
+    .tab.active { background: #007bff; }
+    .content { padding: 20px; background: white; min-height: 80vh; }
+    textarea { width: 100%; height: 400px; border: 1px solid #ccc; padding: 10px; font-size: 16px; }
+    button { padding: 10px 15px; margin: 5px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <h1 style="text-align:center; padding:15px; background:#007bff; color:white; margin:0;">Meu Painel Pessoal</h1>
+  
+  <div id="tabs" class="tabs"></div>
+  
+  <div class="content">
+    <input type="text" id="tabTitle" placeholder="Título da aba" style="width:300px; padding:10px; font-size:16px;">
+    <button onclick="addTab()">+ Nova Aba</button>
+    <button onclick="saveAll()">💾 Salvar Tudo</button>
+    
+    <div id="contentArea"></div>
+  </div>
+
+  <script>
+    let tabs = JSON.parse(localStorage.getItem('myTabs')) || [
+      {id: 1, title: "Bem-vindo", content: "Esta é sua primeira aba. Pode editar e criar quantas quiser!"}
+    ];
+    let currentTab = 0;
+
+    function renderTabs() {
+      const tabsDiv = document.getElementById('tabs');
+      tabsDiv.innerHTML = '';
+      
+      tabs.forEach((tab, index) => {
+        const tabEl = document.createElement('div');
+        tabEl.className = `tab ${index === currentTab ? 'active' : ''}`;
+        tabEl.textContent = tab.title;
+        tabEl.onclick = () => openTab(index);
+        tabsDiv.appendChild(tabEl);
+      });
+    }
+
+    function openTab(index) {
+      currentTab = index;
+      renderTabs();
+      
+      const area = document.getElementById('contentArea');
+      area.innerHTML = `
+        <h2>${tabs[index].title}</h2>
+        <textarea id="tabContent">${tabs[index].content}</textarea><br><br>
+        <button onclick="saveCurrentTab()">Salvar Aba Atual</button>
+        <button onclick="deleteTab(${index})" style="background:red;color:white;">Excluir Aba</button>
+      `;
+    }
+
+    function addTab() {
+      const title = document.getElementById('tabTitle').value || "Nova Aba";
+      tabs.push({id: Date.now(), title: title, content: "Escreva aqui..."});
+      document.getElementById('tabTitle').value = '';
+      renderTabs();
+      openTab(tabs.length - 1);
+    }
+
+    function saveCurrentTab() {
+      const content = document.getElementById('tabContent').value;
+      tabs[currentTab].content = content;
+      saveAll();
+      alert("✅ Aba salva com sucesso!");
+    }
+
+    function saveAll() {
+      localStorage.setItem('myTabs', JSON.stringify(tabs));
+    }
+
+    function deleteTab(index) {
+      if (confirm("Tem certeza que quer excluir esta aba?")) {
+        tabs.splice(index, 1);
+        if (currentTab >= tabs.length) currentTab = tabs.length - 1;
+        if (tabs.length === 0) tabs = [{id:1, title:"Nova Aba", content:""}];
+        renderTabs();
+        openTab(currentTab);
+      }
+    }
+
+    // Iniciar
+    renderTabs();
+    openTab(0);
+  </script>
+</body>
+</html>
